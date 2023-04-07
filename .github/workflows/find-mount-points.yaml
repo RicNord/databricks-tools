@@ -1,0 +1,20 @@
+name: Find mounted file systems
+on:
+  workflow_dispatch:
+    inputs:
+      arguments:
+        description: Arguments to pass to the executable
+        required: false
+        default: ""
+        type: string
+jobs:
+  find-mount-points:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          $GITHUB_WORKSPACE/executables/find-dbfs-mount-points.sh \
+          ${{ inputs.arguments }}
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
