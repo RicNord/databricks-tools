@@ -1,0 +1,4 @@
+# .py and .scala files use LF as EOL (End of Line).
+# Solves issues with Databricks Repos.
+*.py text eol=lf
+*.scala text eol=lf
