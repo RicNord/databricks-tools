@@ -1,0 +1,28 @@
+name: Example of orchestration for reusable workflows
+on:
+  workflow_dispatch:
+jobs:
+  # Example of calling reusable workflow
+  get-aad-token:
+    uses: ./.github/workflows/get-aad-token.yaml
+    secrets:
+      SPN_ID: ${{ secrets.SPN_ID }}
+      SPN_SECRET: ${{ secrets.SPN_SECRET }}
+      TENANT_ID: ${{ secrets.TENANT_ID }}
+      PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+  # Use output of previous job
+  use-output-from-other-job:
+    runs-on: ubuntu-latest
+    needs: get-aad-token
+    steps:
+      - id: decrypt-token
+        run: |
+          AAD_TOKEN_DECRYPTED=$(gpg --decrypt --quiet --batch --passphrase "$PGP_PASSPHRASE" --output - <(echo "$AAD_TOKEN_ENCRYPTED" | base64 --decode))
+          echo "::add-mask::$AAD_TOKEN_DECRYPTED"
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          AAD_TOKEN_ENCRYPTED: ${{ needs.get-aad-token.outputs.AAD_TOKEN_ENCRYPTED }}
+      - run: |
+          echo "This step can now use the (decrypted) token the reusable workflow outputs"
+        env:
+          AAD_TOKEN_DECRYPTED: ${{ steps.decrypt-token.outputs.AAD_TOKEN_DECRYPTED }}
