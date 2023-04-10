@@ -19,6 +19,7 @@ jobs:
         run: |
           AAD_TOKEN_DECRYPTED=$(gpg --decrypt --quiet --batch --passphrase "$PGP_PASSPHRASE" --output - <(echo "$AAD_TOKEN_ENCRYPTED" | base64 --decode))
           echo "::add-mask::$AAD_TOKEN_DECRYPTED"
+          echo "AAD_TOKEN_DECRYPTED=$AAD_TOKEN_DECRYPTED" >> $GITHUB_OUTPUT
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           AAD_TOKEN_ENCRYPTED: ${{ needs.get-aad-token.outputs.AAD_TOKEN_ENCRYPTED }}
