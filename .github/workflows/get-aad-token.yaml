@@ -1,0 +1,34 @@
+name: Get AAD token for Service Principal
+on:
+  workflow_call:
+    outputs:
+      AAD_TOKEN_ENCRYPTED:
+        description: "Encrypted AAD Token scoped for Azure Databricks"
+        value: ${{ jobs.get-token.outputs.AAD_TOKEN_ENCRYPTED }}
+    secrets:
+      SPN_ID:
+        required: true
+      SPN_SECRET:
+        required: true
+      TENANT_ID:
+        required: true
+      PGP_PASSPHRASE:
+        required: true
+jobs:
+  get-token:
+    runs-on: ubuntu-latest
+    outputs:
+      AAD_TOKEN_ENCRYPTED: ${{ steps.get-token.outputs.AAD_TOKEN_ENCRYPTED }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: get-token
+        run: |
+          source $GITHUB_WORKSPACE/executables/get-aad-token-for-spn.sh
+          echo "::add-mask::$AAD_TOKEN"
+          AAD_TOKEN_ENCRYPTED=$(gpg --symmetric --batch --passphrase $PGP_PASSPHRASE --output - <(echo "$AAD_TOKEN") | base64 -w0)
+          echo "AAD_TOKEN_ENCRYPTED=$AAD_TOKEN_ENCRYPTED" >> $GITHUB_OUTPUT
+        env:
+          SPN_ID: ${{ secrets.SPN_ID }}
+          SPN_SECRET: ${{ secrets.SPN_SECRET }}
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
