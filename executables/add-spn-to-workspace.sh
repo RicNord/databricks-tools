@@ -11,6 +11,13 @@ function usage() {
     -a    Add service principal to admin group
     -h    Display this menu
 
+    Notes:
+        Expected env variables:
+            - DATABRICKS_HOST
+            - DATABRICKS_TOKEN
+            - SPN_ID
+            - SPN_DISPLAY_NAME
+
 EOF
     exit 1
 }
